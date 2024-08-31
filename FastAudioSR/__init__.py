@@ -1,11 +1,10 @@
-import time
-from scipy.io.wavfile import write
 import torch
 import torchaudio
-from .speechsr import SynthesizerTrn
 import os
+from scipy.io.wavfile import write
+from .speechsr import SynthesizerTrn
 
-class FastAudioSR:
+class FASR:
     def __init__(self, ckpt_path):
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.hps = {
@@ -58,17 +57,12 @@ class FastAudioSR:
         return converted_audio
 
 
-    @staticmethod
-    def save_audio(audio, output_path):
+    def save_audio(self, audio, output_path):
         audio_numpy = (audio.numpy() * 32767.0).astype('int16')
         write(output_path, 48000, audio_numpy)
 
 
-if __name__ == '__main__':
-    model = FastAudioSR(ckpt_path='SR48k.pth')
-    start = time.perf_counter()
-    input_speech = 'ref.wav'
-    input_audio = model.load_and_preprocess_audio(input_speech)
-    output_audio = model.super_resolution(input_audio)
-    print(time.perf_counter()-start)
-    model.save_audio(output_audio, './test.wav')
+    def run(self, input_speech, output_path):
+        input_audio = self.load_and_preprocess_audio(input_speech)
+        output_audio = self.super_resolution(input_audio)
+        self.save_audio(output_audio, output_path)

@@ -1,15 +1,14 @@
 import torch
 from torch import nn
 from torch.nn import functional as F
-import modules
-
 from torch.nn import Conv1d, Conv2d
 from torch.nn.utils import weight_norm, remove_weight_norm, spectral_norm
-from commons import init_weights, get_padding
 import torchaudio
 from einops import rearrange
-import activations
-from resample import UpSample1d, DownSample1d
+from .resample import UpSample1d, DownSample1d
+from .commons import init_weights, get_padding
+from .modules import LRELU_SLOPE
+from .activations import SnakeBeta
 
 class Activation1d(nn.Module):
     def __init__(self,
@@ -62,7 +61,7 @@ class AMPBlock0(torch.nn.Module):
 
         self.activations = nn.ModuleList([
             Activation1d(
-                activation=activations.SnakeBeta(channels, alpha_logscale=True))
+                activation=SnakeBeta(channels, alpha_logscale=True))
                 for _ in range(self.num_layers)
         ])
 
@@ -99,7 +98,7 @@ class Generator(torch.nn.Module):
             for j, (k, d) in enumerate(zip(resblock_kernel_sizes, resblock_dilation_sizes)):
                 self.resblocks.append(resblock(ch, k, d, activation="snakebeta"))
 
-        activation_post = activations.SnakeBeta(ch, alpha_logscale=True)
+        activation_post = SnakeBeta(ch, alpha_logscale=True)
         self.activation_post = Activation1d(activation=activation_post)
 
         self.conv_post = Conv1d(ch, 1, 7, 1, padding=3, bias=False)
@@ -160,7 +159,7 @@ class DiscriminatorP(torch.nn.Module):
 
         for l in self.convs:
             x = l(x)
-            x = F.leaky_relu(x, modules.LRELU_SLOPE)
+            x = F.leaky_relu(x, LRELU_SLOPE)
             fmap.append(x)
         x = self.conv_post(x)
         fmap.append(x)
@@ -196,7 +195,7 @@ class DiscriminatorR(torch.nn.Module):
 
         for l in self.convs:
             x = l(x)
-            x = F.leaky_relu(x, modules.LRELU_SLOPE)
+            x = F.leaky_relu(x, LRELU_SLOPE)
             fmap.append(x)
         x = self.conv_post(x)
         fmap.append(x)

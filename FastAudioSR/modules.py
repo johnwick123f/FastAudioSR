@@ -2,17 +2,13 @@ import math
 import torch
 from torch import nn
 from torch.nn import functional as F
-
 from torch.nn import Conv1d
 from torch.nn.utils import weight_norm, remove_weight_norm
-
-import commons
-from commons import init_weights, get_padding
-from transforms import piecewise_rational_quadratic_transform
-
 from timm.models.vision_transformer import Attention
 from itertools import repeat
 import collections.abc
+from .commons import init_weights, get_padding, fused_add_tanh_sigmoid_multiply
+from .transforms import piecewise_rational_quadratic_transform
 
 LRELU_SLOPE = 0.1
 
@@ -145,7 +141,7 @@ class WN(torch.nn.Module):
             res_skip_layer = torch.nn.utils.weight_norm(res_skip_layer, name='weight')
             self.res_skip_layers.append(res_skip_layer)
 
-    def forward(self, x, x_mask, g=None, **kwargs):
+    def forward(self, x, x_mask, g=None):
         output = torch.zeros_like(x)
         n_channels_tensor = torch.IntTensor([self.hidden_channels])
 
@@ -160,7 +156,7 @@ class WN(torch.nn.Module):
             else:
                 g_l = torch.zeros_like(x_in)
 
-            acts = commons.fused_add_tanh_sigmoid_multiply(
+            acts = fused_add_tanh_sigmoid_multiply(
                 x_in,
                 g_l,
                 n_channels_tensor)
@@ -257,7 +253,7 @@ class ResBlock2(torch.nn.Module):
 
 
 class Log(nn.Module):
-    def forward(self, x, x_mask, reverse=False, **kwargs):
+    def forward(self, x, x_mask, reverse=False):
         if not reverse:
             y = torch.log(torch.clamp_min(x, 1e-5)) * x_mask
             logdet = torch.sum(-y, [1, 2])
@@ -268,7 +264,7 @@ class Log(nn.Module):
 
 
 class Flip(nn.Module):
-    def forward(self, x, *args, reverse=False, **kwargs):
+    def forward(self, x, reverse=False):
         x = torch.flip(x, [1])
         if not reverse:
             logdet = torch.zeros(x.size(0)).to(dtype=x.dtype, device=x.device)
@@ -284,7 +280,7 @@ class ElementwiseAffine(nn.Module):
         self.m = nn.Parameter(torch.zeros(channels, 1))
         self.logs = nn.Parameter(torch.zeros(channels, 1))
 
-    def forward(self, x, x_mask, reverse=False, **kwargs):
+    def forward(self, x, x_mask, reverse=False):
         if not reverse:
             y = self.m + torch.exp(self.logs) * x
             y = y * x_mask
