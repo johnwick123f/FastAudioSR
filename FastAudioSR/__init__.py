@@ -65,4 +65,6 @@ class FASR:
     def run(self, input_speech, output_path):
         input_audio = self.load_and_preprocess_audio(input_speech)
         output_audio = self.super_resolution(input_audio)
-        self.save_audio(output_audio, output_path)
+        #audio_numpy = (audio.numpy() * 32767.0).astype('int16')
+        return output_audio
+        #self.save_audio(output_audio, output_path)
