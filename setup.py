@@ -14,6 +14,8 @@ setup(
         'soundfile',
         'soxr',
         'pydub',
+        'scipy',
+        'timm',
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',
