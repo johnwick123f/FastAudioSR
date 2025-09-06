@@ -11,8 +11,9 @@ setup(
     url='https://github.com/johnwick123f/FastAudioSR',
     license='MIT',
     install_requires=[
-        # List your dependencies here, e.g., 'torch>=1.9.0'
-        # 'numpy>=1.20.0'
+        'soundfile',
+        'soxr',
+        'pydub',
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',
