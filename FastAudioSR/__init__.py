@@ -49,5 +49,5 @@ class FASR:
 
     def run(self, input_speech):
         #input_audio = torch.from_numpy(input_speech)
-        output_audio = self.super_resolution(input_audio)
+        output_audio = self.super_resolution(input_speech)
         return output_audio
