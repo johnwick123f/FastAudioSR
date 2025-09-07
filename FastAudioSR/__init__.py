@@ -47,11 +47,6 @@ class FASR:
         return converted_audio
 
 
-    def save_audio(self, audio, output_path):
-        audio_numpy = (audio.numpy() * 32767.0).astype('int16')
-        write(output_path, 48000, audio_numpy)
-
-
     def run(self, input_speech):
         #input_audio = torch.from_numpy(input_speech)
         output_audio = self.super_resolution(input_audio)
