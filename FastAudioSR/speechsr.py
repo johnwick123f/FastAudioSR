@@ -106,7 +106,7 @@ class Generator(torch.nn.Module):
             self.cond = nn.Conv1d(gin_channels, upsample_initial_channel, 1)
 
     def forward(self, x, g=None):
-        #x = self.conv_pre(x)
+        x = self.conv_pre(x)
         if g is not None:
             x = x + self.cond(g)
 
@@ -268,4 +268,5 @@ class SynthesizerTrn(nn.Module):
     def infer(self, x, max_len=None):
         o = self.dec(x[:,:,:max_len])
         return o
+
 
