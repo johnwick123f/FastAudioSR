@@ -110,19 +110,12 @@ class Generator(torch.nn.Module):
         if g is not None:
             x = x + self.cond(g)
 
-        for i in range(self.num_upsamples):
+        x = F.interpolate(x, int(x.shape[-1] * 3), mode='linear')
+        xs = self.resblocks[2](x)
+        
 
-            x = F.interpolate(x, int(x.shape[-1] * 3), mode='linear')
-            xs = None
-            for j in range(self.num_kernels):
-                if xs is None:
-                    xs = self.resblocks[i*self.num_kernels+j](x)
-                else:
-                    xs += self.resblocks[i*self.num_kernels+j](x)
-            x = xs / self.num_kernels
-
-        x = self.activation_post(x)
-        x = self.conv_post(x)
+        #x = self.activation_post(xs)
+        x = self.conv_post(xs)
         x = torch.tanh(x)
 
         return x
@@ -268,6 +261,7 @@ class SynthesizerTrn(nn.Module):
     def infer(self, x, max_len=None):
         o = self.dec(x[:,:,:max_len])
         return o
+
 
 
 
