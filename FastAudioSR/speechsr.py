@@ -201,8 +201,8 @@ class MultiPeriodDiscriminator(torch.nn.Module):
     def __init__(self, use_spectral_norm=False):
         super(MultiPeriodDiscriminator, self).__init__()
         periods = [2,3,5,7,11]
-        #resolutions = [[4096, 1024, 4096], [2048, 512, 2048], [1024, 256, 1024], [512, 128, 512], [256, 64, 256], [128, 32, 128]] ## for 48k instead
-        resolutions = [[2048, 512, 2048], [1024, 256, 1024], [512, 128, 512], [256, 64, 256], [128, 32, 128]]
+        resolutions = [[4096, 1024, 4096], [2048, 512, 2048], [1024, 256, 1024], [512, 128, 512], [256, 64, 256], [128, 32, 128]] ## for 48k instead
+       # resolutions = [[2048, 512, 2048], [1024, 256, 1024], [512, 128, 512], [256, 64, 256], [128, 32, 128]]
 
         discs = [DiscriminatorR(resolutions[i], use_spectral_norm=use_spectral_norm) for i in range(len(resolutions))]
         discs = discs + [DiscriminatorP(i, use_spectral_norm=use_spectral_norm) for i in periods]
@@ -263,6 +263,7 @@ class SynthesizerTrn(nn.Module):
     def infer(self, x, max_len=None):
         o = self.dec(x[:,:,:max_len])
         return o
+
 
 
 
