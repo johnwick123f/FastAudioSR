@@ -106,15 +106,16 @@ class Generator(torch.nn.Module):
             self.cond = nn.Conv1d(gin_channels, upsample_initial_channel, 1)
 
     def forward(self, x, g=None):
-        x = self.conv_pre(x).detach()
+        x = self.conv_pre(x)
         if g is not None:
             x = x + self.cond(g)
 
-        x = F.interpolate(x, int(x.shape[-1] * 3), mode='linear')
+        ##x = F.interpolate(x, int(x.shape[-1] * 3), mode='linear')
+        x = F.interpolate(x, int(x.shape[-1] * 1.5), mode='linear')
         xs = self.resblocks[2](x)
         
 
-        #x = self.activation_post(xs)
+        x = self.activation_post(xs)
         x = self.conv_post(xs)
         x = torch.tanh(x)
 
@@ -200,7 +201,8 @@ class MultiPeriodDiscriminator(torch.nn.Module):
     def __init__(self, use_spectral_norm=False):
         super(MultiPeriodDiscriminator, self).__init__()
         periods = [2,3,5,7,11]
-        resolutions = [[4096, 1024, 4096], [2048, 512, 2048], [1024, 256, 1024], [512, 128, 512], [256, 64, 256], [128, 32, 128]]
+        #resolutions = [[4096, 1024, 4096], [2048, 512, 2048], [1024, 256, 1024], [512, 128, 512], [256, 64, 256], [128, 32, 128]] ## for 48k instead
+        resolutions = [[2048, 512, 2048], [1024, 256, 1024], [512, 128, 512], [256, 64, 256], [128, 32, 128]]
 
         discs = [DiscriminatorR(resolutions[i], use_spectral_norm=use_spectral_norm) for i in range(len(resolutions))]
         discs = discs + [DiscriminatorP(i, use_spectral_norm=use_spectral_norm) for i in periods]
@@ -261,6 +263,7 @@ class SynthesizerTrn(nn.Module):
     def infer(self, x, max_len=None):
         o = self.dec(x[:,:,:max_len])
         return o
+
 
 
 
