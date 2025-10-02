@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='FastAudioSR',
-    version='0.1.11',
+    version='0.1.12',
     packages=find_packages(),
     author='johnwick123f',
     description='A fast speech recognition package',
